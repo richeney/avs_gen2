@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "apiVersion": {
+      "value": "2024-09-01-preview"
+    },
+    "sddcName": {
+      "value": "AVSonNative-rcheney"
+    },
+    "vnetName": {
+      "value": "vnet-rcheney"
+    },
+    "location": {
+      "value": "uksouth"
+    },
+    "sku": {
+      "value": "av64"
+    },
+    "sddcProperties": {
+      "value": {
+        "managementCluster": {
+          "clusterSize": 3
+        },
+        "networkBlock": "10.76.0.0/22",
+        "dnsZoneType": "Public",
+        "virtualNetworkId": "/subscriptions/d52f9c4a-5468-47ec-9641-da4ef1916bb5/resourceGroups/rcheney/providers/Microsoft.Network/virtualNetworks/vnet-rcheney"
+      }
+    },
+    "zone": {
+      "value": []
+    },
+    "vnetProperties": {
+      "value": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.76.0.0/22"
+          ]
+        }
+      }
+    },
+    "tags": {
+      "value": {
+        "CreatedBy": "Richard Cheney",
+        "CreatedDate": "04/28/2025",
+        "DeleteDate": "04/30/2024"
+      }
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apiVersion": {
+            "defaultValue": "2024-09-01-preview",
+            "type": "String",
+            "metadata": {
+                "description": "API version for AVS services"
+            }
+        },
+        "sddcName": {
+            "maxLength": 80,
+            "type": "String",
+            "metadata": {
+                "description": "Name of the private cloud."
+            }
+        },
+        "vnetName": {
+            "maxLength": 80,
+            "type": "String",
+            "metadata": {
+                "description": "Name of the virtual network."
+            }
+        },
+        "location": {
+            "type": "String",
+            "metadata": {
+                "description": "Location of the private cloud."
+            }
+        },
+        "sku": {
+            "type": "String",
+            "metadata": {
+                "description": "SKU for the private cloud."
+            }
+        },
+        "sddcProperties": {
+            "defaultValue": {},
+            "type": "Object",
+            "metadata": {
+                "description": "Properties associated with the private cloud."
+            }
+        },
+        "zone": {
+            "defaultValue": [],
+            "type": "Array"
+        },
+        "vnetProperties": {
+            "defaultValue": {},
+            "type": "Object",
+            "metadata": {
+                "description": "Properties associated with the virtual network."
+            }
+        },
+        "tags": {
+            "defaultValue": {},
+            "type": "Object",
+            "metadata": {
+                "description": "The map of key-value pairs used to tag the resource"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-02-01",
+            "name": "[parameters('vnetName')]",
+            "location": "[parameters('location')]",
+            "properties": "[parameters('vnetProperties')]"
+        },
+        {
+            "type": "Microsoft.AVS/privateClouds",
+            "apiVersion": "[parameters('apiVersion')]",
+            "name": "[parameters('sddcName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+            ],
+            "tags": "[parameters('tags')]",
+            "sku": {
+                "name": "[parameters('sku')]"
+            },
+            "zones": "[parameters('zone')]",
+            "properties": "[parameters('sddcProperties')]"
+        }
+    ]
+}
