@@ -1,6 +1,20 @@
 # Azure VMware Solution - Gen 2
 
-Virtual network integrated. Also known as AVS on Native.
+Working notes on testing out AVS on Native. Virtual network integrated. Also known as AVS on Native.
+
+Keen to automate with Terraform to enable customer / partner demos which was always difficult with AVS Gen 1 with the ExpressRoute Global Reach element and hardware.
+
+There is no support yet in azurerm for Gen 2 (I believe) as I don't think the Go SDK has caught up. Anyway, use azapi in the short term.
+
+Considerations
+
+1. There is a requirement for privileged access to assign roles to two standard service principals. Show least privilege version.
+1. This is an automated vnet injection of AVS using bare metal Azure fleet. Takes 4-6 hours which may blow the
+1. Running `terraform destroy` is likely to fail. May need to document a hybrid destroy process.
+
+## Background
+
+<https://learn.microsoft.com/azure/azure-vmware/native-introduction>
 
 Preview regions:
 
@@ -43,6 +57,7 @@ You need to be
 - Global Administrator
 
 | **Key** | **Value** |
+|---|---|
 | App ID | 1a5e141d-70dd-4594-8442-9fc46fa48686 |
 | App Display Name | Avs Fleet Rp |
 
@@ -79,11 +94,13 @@ Enterprise applications > Avs Fleet Rp > Properties > Enabled for users to sign-
     az storage container create --name tfstate --account-name $storage_account_name --auth-mode login
     ```
 
-1. Add Storage Blob Data Contributor for use_cli
+1. Add Storage Blob Data Contributor for personal CLI token use
 
     ```shell
     az role assignment create --assignee $myObjId --scope $storage_account_id --role "Storage Blob Data Contributor"
     ```
+
+    Allows `use_cli = true`.
 
 1. Display a backend (optional)
 
@@ -132,16 +149,18 @@ Enterprise applications > Avs Fleet Rp > Properties > Enabled for users to sign-
 
 1. Add on assignments
 
-    Contributor
+    __Contributor__
 
     ```shell
     az role assignment create --assignee-object-id $spObjId --assignee-principal-type ServicePrincipal --scope $subscription_id --role "Contributor"
     ```
 
-    RBAC Admin, on the condition that it is solely for
+    __RBAC Admin__, on the condition that it is solely for
 
-    - AVS Orchestrator Role (`d715fb95-a0f0-4f1c-8be6-5ad2d2767f67`) for Avs Fleet Rp service principal (`1a5e141d-70dd-4594-8442-9fc46fa48686`)
-    - Network Contributor (`4d97b98b-1d4f-4787-a291-c67834d212e7`) for AzS VIS Prod App service principal (`a766fecb-91ef-4d42-8bd3-41a61b3eb0e5`)
+    | Name | Object ID | Role | Role ID |
+    |---|---|---|---|
+    | Avs Fleet Rp | `1a5e141d-70dd-4594-8442-9fc46fa48686` | AVS Orchestrator Role | `d715fb95-a0f0-4f1c-8be6-5ad2d2767f67` |
+    | AzS VIS Prod App  | `a766fecb-91ef-4d42-8bd3-41a61b3eb0e5` | Network Contributor | `4d97b98b-1d4f-4787-a291-c67834d212e7` |
 
     ```shell
     az role assignment create --assignee-object-id $spObjId --assignee-principal-type ServicePrincipal --scope $subscription_id \
@@ -150,12 +169,14 @@ Enterprise applications > Avs Fleet Rp > Properties > Enabled for users to sign-
       --condition "((@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {d715fb95-a0f0-4f1c-8be6-5ad2d2767f67} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {1a5e141d-70dd-4594-8442-9fc46fa48686}) OR (@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {4d97b98b-1d4f-4787-a291-c67834d212e7} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {a766fecb-91ef-4d42-8bd3-41a61b3eb0e5}))"
     ```
 
-    Storage Blob Data Contributor
+    __Storage Blob Data Contributor__
 
-    Note hardcoded storage account and resource group name
+    Note hardcoded storage account and resource group name.
 
     ```shell
-    storage_account_id=$(az storage account list --resource-group rcheney-terraform --query "[?starts_with(name,'terraformavs')]|[0].id" -otsv)
+    terraformrg="rcheney-terraform"
+    prefix="terraformavs"
+    storage_account_id=$(az storage account list --subscription $backend_subscription_id --resource-group "$terraformrg" --query "[?starts_with(name,'"$prefix"')]|[0].id" -otsv)
     az role assignment create --assignee-object-id $spObjId --assignee-principal-type ServicePrincipal --scope $storage_account_id --role "Storage Blob Data Contributor"
     ```
 
@@ -194,4 +215,89 @@ Repeat for the managed identity.
 
 ## GitHub
 
-1. Add on an OpenID Connect federated credential. Later.
+You will need the gh CLI and be authenticated with `gh auth login`. (You can check current status with `gh auth status`.)
+
+1. Set the default repo
+
+    Manually
+
+    ```shell
+    gh repo set-default richeney/avs_gen2
+    ```
+
+    More automated
+
+    ```shell
+    gh repo set-default $(git remote -v | grep ^origin | awk '{print $2}' | uniq | sed -E 's|https://github.com/||; s|\.git||')
+    ```
+
+    Output
+
+    ```shell
+    ✓ Set richeney/avs_gen2 as the default repository for the current directory
+    ```
+
+1. Set additional variables
+
+    ```shell
+    identifier="api://terraform_avs_gen2"
+    avs_subscription_id=$(az account show --name "Azure VMware Solution" --query id -otsv)
+    prefix="terraformavs"
+    terraformrg="rcheney-terraform"
+    backend_subscription_id=$avs_subscription_id
+
+    client_id=$(az ad app show --id $identifier --query appId -otsv)
+    tenant_id=$(az account show --name $avs_subscription_id --query tenantId -otsv)
+    storage_account_name=$(az storage account list --subscription $backend_subscription_id --resource-group "$terraformrg" --query "[?starts_with(name,'"$prefix"')]|[0].name" -otsv)
+    ```
+
+1. Create the GitHub Actions variables
+
+    ```shell
+    gh variable set ARM_TENANT_ID --body "$tenant_id"
+    gh variable set ARM_SUBSCRIPTION_ID --body "$avs_subscription_id"
+    gh variable set ARM_CLIENT_ID --body "$client_id"
+    gh variable set BACKEND_AZURE_SUBSCRIPTION_ID --body "$backend_subscription_id"
+    gh variable set BACKEND_AZURE_RESOURCE_GROUP_NAME --body "terraform"
+    gh variable set BACKEND_AZURE_STORAGE_ACCOUNT_NAME --body "$storage_account_name"
+    gh variable set BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME --body "tfstate"
+    gh repo view --json nameWithOwner --template '{{printf "https://github.com/%s/settings/variables/actions\n" .nameWithOwner}}'
+    ```
+
+    Note that the backend subscription and resource group aren't really needed by the workflow, but having that in the variables makes it easier for us humans to find it.
+
+1. Create the OpenID Connect configuration
+
+    ```shell
+    cat > oidc.credential.json <<CRED
+    {
+        "name": "$identifier",
+        "issuer": "https://token.actions.githubusercontent.com",
+        "subject": "$(gh repo view --json nameWithOwner --template '{{printf "repo:%s:ref:refs/heads/main" .nameWithOwner}}')",
+        "description": "Terraform service principal via OpenID Connect",
+        "audiences": [
+            "api://AzureADTokenExchange"
+        ]
+    }
+    CRED
+
+    az ad app federated-credential create --id $identifier --parameters oidc.credential.json
+    ```
+
+
+    ```shell
+    oidc_credential=$(jq -c . <<CRED
+    {
+        "name": "${identifier##api://}",
+        "issuer": "https://token.actions.githubusercontent.com",
+        "subject": "$(gh repo view --json nameWithOwner --template '{{printf "repo:%s:ref:refs/heads/main" .nameWithOwner}}')",
+        "description": "Terraform service principal with identifierUri $identifier, via OpenID Connect",
+        "audiences": [
+            "api://AzureADTokenExchange"
+        ]
+    }
+    CRED
+    )
+
+    az ad app federated-credential create --id $identifier --parameters "$oidc_credential"
+    ```
