@@ -6,7 +6,7 @@ variable "subscription_id" {
 variable "identifier" {
   description = "A unique identifier for the resources."
   type        = string
-  default     = "richeney-avs-gen2"
+  default     = "rcheney-avs-gen2"
 }
 
 variable "resource_group_name" {
