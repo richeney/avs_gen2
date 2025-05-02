@@ -1,0 +1,371 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-07-01",
+            "name": "esx-cust-vmk1-f0e358d8bee44ad0aa5784-nsg",
+            "location": "uksouth",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "securityRules": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-07-01",
+            "name": "esx-vmotion-vmk2-f0e358d8bee44ad0aa5784-nsg",
+            "location": "uksouth",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "securityRules": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-07-01",
+            "name": "esx-vsan-vmk3-f0e358d8bee44ad0aa5784-nsg",
+            "location": "uksouth",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "securityRules": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-07-01",
+            "name": "esx-cust-fdc-f0e358d8bee44ad0aa5784-nsg",
+            "location": "uksouth",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "securityRules": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-07-01",
+            "name": "cust-fds-f0e358d8bee44ad0aa5784-nsg",
+            "location": "uksouth",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "securityRules": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-07-01",
+            "name": "services-f0e358d8bee44ad0aa5784-nsg",
+            "location": "uksouth",
+            "dependsOn": [],
+            "tags": {},
+            "properties": {
+                "securityRules": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2021-01-01",
+            "name": "esx-cust-vmk1-f0e358d8bee44ad0aa5784-rt",
+            "location": "uksouth",
+            "tags": {},
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2021-01-01",
+            "name": "esx-vmotion-vmk2-f0e358d8bee44ad0aa5784-rt",
+            "location": "uksouth",
+            "tags": {},
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2021-01-01",
+            "name": "esx-vsan-vmk3-f0e358d8bee44ad0aa5784-rt",
+            "location": "uksouth",
+            "tags": {},
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2021-01-01",
+            "name": "esx-cust-fdc-f0e358d8bee44ad0aa5784-rt",
+            "location": "uksouth",
+            "tags": {},
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2021-01-01",
+            "name": "cust-fds-f0e358d8bee44ad0aa5784-rt",
+            "location": "uksouth",
+            "tags": {},
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2021-01-01",
+            "name": "services-f0e358d8bee44ad0aa5784-rt",
+            "location": "uksouth",
+            "tags": {},
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/esx-cust-vmk1-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-cust-vmk1-f0e358d8bee44ad0aa5784-nsg')]",
+                "[resourceId('Microsoft.Network/routeTables', 'esx-cust-vmk1-f0e358d8bee44ad0aa5784-rt')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.1.0/24"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-cust-vmk1-f0e358d8bee44ad0aa5784-nsg')]"
+                },
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled",
+                "routeTable": {
+                    "id": "[resourceId('Microsoft.Network/routeTables', 'esx-cust-vmk1-f0e358d8bee44ad0aa5784-rt')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/esx-vmotion-vmk2-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'rcheney-avs-gen2-vnet', 'esx-cust-vmk1-f0e358d8bee44ad0aa5784')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-vmotion-vmk2-f0e358d8bee44ad0aa5784-nsg')]",
+                "[resourceId('Microsoft.Network/routeTables', 'esx-vmotion-vmk2-f0e358d8bee44ad0aa5784-rt')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.2.0/24"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-vmotion-vmk2-f0e358d8bee44ad0aa5784-nsg')]"
+                },
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled",
+                "routeTable": {
+                    "id": "[resourceId('Microsoft.Network/routeTables', 'esx-vmotion-vmk2-f0e358d8bee44ad0aa5784-rt')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/esx-vsan-vmk3-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'rcheney-avs-gen2-vnet', 'esx-vmotion-vmk2-f0e358d8bee44ad0aa5784')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-vsan-vmk3-f0e358d8bee44ad0aa5784-nsg')]",
+                "[resourceId('Microsoft.Network/routeTables', 'esx-vsan-vmk3-f0e358d8bee44ad0aa5784-rt')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.3.0/24"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-vsan-vmk3-f0e358d8bee44ad0aa5784-nsg')]"
+                },
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled",
+                "routeTable": {
+                    "id": "[resourceId('Microsoft.Network/routeTables', 'esx-vsan-vmk3-f0e358d8bee44ad0aa5784-rt')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/esx-lrnsxuplink-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'rcheney-avs-gen2-vnet', 'cust-fds-f0e358d8bee44ad0aa5784')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.0.128/27"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/esx-lrnsxuplink-1-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'rcheney-avs-gen2-vnet', 'esx-lrnsxuplink-f0e358d8bee44ad0aa5784')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.0.160/27"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/esx-cust-fdc-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'rcheney-avs-gen2-vnet', 'esx-vsan-vmk3-f0e358d8bee44ad0aa5784')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-cust-fdc-f0e358d8bee44ad0aa5784-nsg')]",
+                "[resourceId('Microsoft.Network/routeTables', 'esx-cust-fdc-f0e358d8bee44ad0aa5784-rt')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.0.64/27"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'esx-cust-fdc-f0e358d8bee44ad0aa5784-nsg')]"
+                },
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled",
+                "routeTable": {
+                    "id": "[resourceId('Microsoft.Network/routeTables', 'esx-cust-fdc-f0e358d8bee44ad0aa5784-rt')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/cust-fds-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'rcheney-avs-gen2-vnet', 'esx-cust-fdc-f0e358d8bee44ad0aa5784')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'cust-fds-f0e358d8bee44ad0aa5784-nsg')]",
+                "[resourceId('Microsoft.Network/routeTables', 'cust-fds-f0e358d8bee44ad0aa5784-rt')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.0.96/27"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'cust-fds-f0e358d8bee44ad0aa5784-nsg')]"
+                },
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled",
+                "routeTable": {
+                    "id": "[resourceId('Microsoft.Network/routeTables', 'cust-fds-f0e358d8bee44ad0aa5784-rt')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "rcheney-avs-gen2-vnet/services-f0e358d8bee44ad0aa5784",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'rcheney-avs-gen2-vnet', 'esx-lrnsxuplink-1-f0e358d8bee44ad0aa5784')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'services-f0e358d8bee44ad0aa5784-nsg')]",
+                "[resourceId('Microsoft.Network/routeTables', 'services-f0e358d8bee44ad0aa5784-rt')]"
+            ],
+            "properties": {
+                "addressPrefixes": [
+                    "10.76.0.224/27"
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.AVS/PrivateClouds",
+                        "properties": {
+                            "serviceName": "Microsoft.AVS/PrivateClouds"
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'services-f0e358d8bee44ad0aa5784-nsg')]"
+                },
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled",
+                "routeTable": {
+                    "id": "[resourceId('Microsoft.Network/routeTables', 'services-f0e358d8bee44ad0aa5784-rt')]"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

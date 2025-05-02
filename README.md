@@ -23,17 +23,28 @@ Preview regions:
 - Japan East
 - Switzerland North
 
-az extension add --name quota
-az account set --name "Richard Cheney - Application - Internal"
+## Tooling
 
-## Check quota
+- Ubuntu on WSL
+- Azure CLI
+- GitHub CLI
+- git, jq, etc
 
+```shell
+az extension add --name vmware
+```
+
+### Check quota
+
+```shell
 subscription_id=$(az account show --query id -otsv)
 location=uksouth
-
 az quota show --resource-name AV64 --scope /subscriptions/$subscription_id$/providers/Microsoft.Compute/locations/$location
+```
 
-## Providers and features
+⚠️ No, this is not correct. Find out how the quota is done.
+
+### Providers and features
 
 az provider register --namespace 'Microsoft.AVS'
 az provider register --namespace 'Microsoft.Quota'
@@ -46,7 +57,7 @@ az feature registration create --namespace "Microsoft.AVS" --name "EarlyAccess" 
 az feature registration create --namespace "Microsoft.AVS" --name "FleetGreenfield"  --subscription "<Subscription ID>"
 ```
 
-## Azure VMware Solution service principal
+### Azure VMware Solution service principal
 
 <https://learn.microsoft.com/azure/azure-vmware/native-first-party-principle-security>
 
@@ -64,6 +75,8 @@ You need to be
 az ad sp update --id "1a5e141d-70dd-4594-8442-9fc46fa48686" --set accountEnabled=true
 
 Enterprise applications > Avs Fleet Rp > Properties > Enabled for users to sign-in? Set to Yes.
+
+## Intro
 
 ## Terraform remote backend
 
@@ -149,13 +162,13 @@ Enterprise applications > Avs Fleet Rp > Properties > Enabled for users to sign-
 
 1. Add on assignments
 
-    __Contributor__
+    **Contributor**
 
     ```shell
     az role assignment create --assignee-object-id $spObjId --assignee-principal-type ServicePrincipal --scope $subscription_id --role "Contributor"
     ```
 
-    __RBAC Admin__, on the condition that it is solely for
+    **RBAC Admin**, on the condition that it is solely for
 
     | Name | Object ID | Role | Role ID |
     |---|---|---|---|
@@ -169,7 +182,7 @@ Enterprise applications > Avs Fleet Rp > Properties > Enabled for users to sign-
       --condition "((@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {d715fb95-a0f0-4f1c-8be6-5ad2d2767f67} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {1a5e141d-70dd-4594-8442-9fc46fa48686}) OR (@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {4d97b98b-1d4f-4787-a291-c67834d212e7} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {a766fecb-91ef-4d42-8bd3-41a61b3eb0e5}))"
     ```
 
-    __Storage Blob Data Contributor__
+    **Storage Blob Data Contributor**
 
     Note hardcoded storage account and resource group name.
 
@@ -269,23 +282,6 @@ You will need the gh CLI and be authenticated with `gh auth login`. (You can che
 1. Create the OpenID Connect configuration
 
     ```shell
-    cat > oidc.credential.json <<CRED
-    {
-        "name": "$identifier",
-        "issuer": "https://token.actions.githubusercontent.com",
-        "subject": "$(gh repo view --json nameWithOwner --template '{{printf "repo:%s:ref:refs/heads/main" .nameWithOwner}}')",
-        "description": "Terraform service principal via OpenID Connect",
-        "audiences": [
-            "api://AzureADTokenExchange"
-        ]
-    }
-    CRED
-
-    az ad app federated-credential create --id $identifier --parameters oidc.credential.json
-    ```
-
-
-    ```shell
     oidc_credential=$(jq -c . <<CRED
     {
         "name": "${identifier##api://}",
@@ -301,3 +297,97 @@ You will need the gh CLI and be authenticated with `gh auth login`. (You can che
 
     az ad app federated-credential create --id $identifier --parameters "$oidc_credential"
     ```
+
+## Workflow
+
+Add pics / steps for
+
+1. GitHub repo
+
+gh workflow view terraform.yml --web
+
+1.
+
+gh workflow list
+NAME                               STATE   ID
+Terraform GitHub Actions Workflow  active  159221758
+
+gh workflow view "Terraform GitHub Actions Workflow"
+Terraform GitHub Actions Workflow - terraform.yml
+ID: 159221758
+
+Total runs 1
+Recent runs
+   TITLE            WORKFLOW                           BRANCH  EVENT              ID
+*  Terraform Apply  Terraform GitHub Actions Workflow  main    workflow_dispatch  14754424669
+
+To see more runs for this workflow, try: gh run list --workflow terraform.yml
+To see the YAML for this workflow, try: gh workflow view terraform.yml --yaml
+
+gh workflow run --help
+gh workflow run
+gh workflow run terraform.yml
+gh run list --workflow terraform.yml
+
+gh workflow view terraform.yml --yaml
+
+gh run watch && notify-send "run is done!"
+
+~/git/avs (main) $ az vmware private-cloud list --resource-group rcheney-avs-gen2 --query "[0].provisioningState"
+"Building"
+
+```shell
+az vmware private-cloud list --resource-group rcheney-avs-gen2
+```
+
+```json
+[
+  {
+    "availability": {
+      "strategy": "SingleZone",
+      "zone": 1
+    },
+    "encryption": {
+      "status": "Disabled"
+    },
+    "endpoints": {
+      "hcxCloudManager": "https://hcx.f0e358d8bee44ad0aa5784.uksouth.avs.azure.com/",
+      "hcxCloudManagerIp": "10.76.0.37",
+      "nsxtManager": "https://nsx.f0e358d8bee44ad0aa5784.uksouth.avs.azure.com/",
+      "nsxtManagerIp": "10.76.0.4",
+      "vcenterIp": "10.76.0.36",
+      "vcsa": "https://vc.f0e358d8bee44ad0aa5784.uksouth.avs.azure.com/"
+    },
+    "externalCloudLinks": [],
+    "id": "/subscriptions/d52f9c4a-5468-47ec-9641-da4ef1916bb5/resourceGroups/rcheney-avs-gen2/providers/Microsoft.AVS/privateClouds/rcheney-avs-gen2",
+    "identitySources": [],
+    "internet": "Disabled",
+    "location": "uksouth",
+    "managementCluster": {
+      "clusterId": 1,
+      "clusterSize": 3,
+      "hosts": [
+        "esx65-r92.f0e358d8bee44ad0aa5784.uksouth.avs.azure.com",
+        "esx65-r62.f0e358d8bee44ad0aa5784.uksouth.avs.azure.com",
+        "esx65-r70.f0e358d8bee44ad0aa5784.uksouth.avs.azure.com"
+      ],
+      "provisioningState": "Building",
+      "vsanDatastoreName": "vsanDatastore"
+    },
+    "managementNetwork": "10.76.0.0/26",
+    "name": "rcheney-avs-gen2",
+    "networkBlock": "10.76.0.0/22",
+    "nsxPublicIpQuotaRaised": "Disabled",
+    "nsxtCertificateThumbprint": "04D47C41E0A39866F4E6A9921308E9AC5DC6B823",
+    "provisioningState": "Building",
+    "resourceGroup": "rcheney-avs-gen2",
+    "sku": {
+      "name": "av64"
+    },
+    "tags": {},
+    "type": "Microsoft.AVS/privateClouds",
+    "vcenterCertificateThumbprint": "A7C39E7B7F4D4E46DE6721FE98C9059C6ED8B14A",
+    "vmotionNetwork": "10.76.2.0/24"
+  }
+]
+```
