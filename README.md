@@ -174,12 +174,15 @@ Enterprise applications > Avs Fleet Rp > Properties > Enabled for users to sign-
     |---|---|---|---|
     | Avs Fleet Rp | `1a5e141d-70dd-4594-8442-9fc46fa48686` | AVS Orchestrator Role | `d715fb95-a0f0-4f1c-8be6-5ad2d2767f67` |
     | AzS VIS Prod App  | `a766fecb-91ef-4d42-8bd3-41a61b3eb0e5` | Network Contributor | `4d97b98b-1d4f-4787-a291-c67834d212e7` |
+    | AzS VIS Prod App  | `a766fecb-91ef-4d42-8bd3-41a61b3eb0e5` | AVS on Fleet VIS Role | `49fc33c1-886f-4b21-a00e-1d9993234734` |
+
+    > Was Network COntributor, now AVS on Fleet VIS Role
 
     ```shell
     az role assignment create --assignee-object-id $spObjId --assignee-principal-type ServicePrincipal --scope $subscription_id \
       --role "Role Based Access Control Administrator" \
-      --description "Allow AVS Orchestrator Role for Avs Fleet Rp, and Network Contributor for AzS VIS Prod App" \
-      --condition "((@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {d715fb95-a0f0-4f1c-8be6-5ad2d2767f67} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {1a5e141d-70dd-4594-8442-9fc46fa48686}) OR (@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {4d97b98b-1d4f-4787-a291-c67834d212e7} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {a766fecb-91ef-4d42-8bd3-41a61b3eb0e5}))"
+      --description "Allow AVS Orchestrator Role for Avs Fleet Rp, and AVS on Fleet VIS Role for AzS VIS Prod App" \
+      --condition "((@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {d715fb95-a0f0-4f1c-8be6-5ad2d2767f67} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {1a5e141d-70dd-4594-8442-9fc46fa48686}) OR (@Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {49fc33c1-886f-4b21-a00e-1d9993234734} AND @Request[Microsoft.Authorization/roleAssignments:PrincipalId] ForAnyOfAnyValues:GuidEquals {a766fecb-91ef-4d42-8bd3-41a61b3eb0e5}))"
     ```
 
     **Storage Blob Data Contributor**
@@ -391,3 +394,8 @@ az vmware private-cloud list --resource-group rcheney-avs-gen2
   }
 ]
 ```
+
+## References
+
+<https://learn.microsoft.com/rest/api/avs/operation-groups>
+<https://learn.microsoft.com/rest/api/avs/private-clouds/create-or-update>

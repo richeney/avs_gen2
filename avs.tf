@@ -51,22 +51,21 @@ resource "azapi_resource" "avs" {
     create = "6h"
     delete = "6h"
   }
+
+  response_export_values = ["*"]
 }
 
-/*
-data "azurerm_vmware_solution_private_cloud" "avs" {
+data "azurerm_vmware_private_cloud" "avs" {
   name                = azapi_resource.avs.name
   resource_group_name = azurerm_resource_group.avs.name
 }
-*/
 
 
-/*
 resource "azurerm_virtual_network_peering" "hub-to-avs" {
   name                      = "${var.prefix}-hub-to-avs"
   resource_group_name       = azurerm_resource_group.hub.name
   virtual_network_name      = azurerm_virtual_network.hub.name
-  remote_virtual_network_id = azurerm_resource_group.avs.id
+  remote_virtual_network_id = azurerm_virtual_network.avs.id
 
   allow_virtual_network_access           = true
   allow_forwarded_traffic                = true
@@ -79,15 +78,11 @@ resource "azurerm_virtual_network_peering" "avs-to-hub" {
   name                      = "${var.prefix}-avs-to-hub"
   resource_group_name       = azurerm_resource_group.avs.name
   virtual_network_name      = azurerm_virtual_network.avs.name
-  remote_virtual_network_id = azurerm_resource_group.hub.id
+  remote_virtual_network_id = azurerm_virtual_network.hub.id
 
-  allow_virtual_network_access = true
-  allow_forwarded_traffic      = true
-  allow_gateway_transit        = true
-  use_remote_gateways          = true
-  peer_complete_virtual_networks_enabled = false
-  local_subnet_names = [
-
-  ]// default
+  allow_virtual_network_access           = true
+  allow_forwarded_traffic                = true
+  allow_gateway_transit                  = true
+  use_remote_gateways                    = false // should be true, but we have no gateways in the hub
+  peer_complete_virtual_networks_enabled = true
 }
-*/
